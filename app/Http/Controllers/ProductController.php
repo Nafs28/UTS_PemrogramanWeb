@@ -4,122 +4,111 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Product;
-use App\Models\Supplier;
-use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class ProductController extends Controller
 {
-    // GET /products (index) - Search, Filter, Allowlist Sorting & Pagination (Slide 32 & 38)
     public function index(Request $request)
     {
-        $allowedSorts = ['name', 'sku', 'price', 'stock'];
-        $sort = in_array($request->sort, $allowedSorts, true) ? $request->sort : 'name';
-        $dir = strtoupper($request->dir ?? 'ASC') === 'DESC' ? 'DESC' : 'ASC';
+        // Eager loading with('category') menghindari N+1 Query (Slide 10 PPT)
+        $query = Product::with('category');
 
-        $products = Product::with(['category', 'suppliers'])
-            ->when($request->search, function ($query, $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                      ->orWhere('sku', 'like', "%{$search}%");
-                });
-            })
-            ->when($request->category_id, function ($query, $categoryId) {
-                $query->where('category_id', $categoryId);
-            })
-            ->orderBy($sort, $dir)
-            ->paginate(6)
-            ->withQueryString();
-
-        $categories = Category::orderBy('name')->get();
-
-        return view('products.index', compact('products', 'categories', 'sort', 'dir'));
-    }
-
-    // GET /products/create (create)
-    public function create()
-    {
-        $categories = Category::orderBy('name')->get();
-        $suppliers = Supplier::orderBy('name')->get();
-        return view('products.create', compact('categories', 'suppliers'));
-    }
-
-    // POST /products (store) - Validasi & Mass Assignment (Slide 19 & 31)
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'category_id'   => ['required', 'exists:categories,id'],
-            'sku'           => ['required', 'string', 'min:3', 'max:50', 'unique:products,sku'],
-            'name'          => ['required', 'string', 'min:3', 'max:150'],
-            'price'         => ['required', 'numeric', 'gt:0'],
-            'stock'         => ['required', 'integer', 'min:0'],
-            'minimum_stock' => ['required', 'integer', 'min:0'],
-            'supplier_id'   => ['nullable', 'exists:suppliers,id'],
-        ]);
-
-        $validated['sku'] = strtoupper($validated['sku']);
-        $product = Product::create($validated);
-
-        if ($request->filled('supplier_id')) {
-            $product->suppliers()->sync([
-                $request->supplier_id => ['supplier_price' => $validated['price'] * 0.8]
-            ]);
+        if ($request->filled('search')) {
+            $s = $request->search;
+            $query->where(function ($q) use ($s) {
+                $q->where('name', 'like', "%{$s}%")
+                  ->orWhere('sku', 'like', "%{$s}%");
+            });
         }
 
-        return redirect()->route('products.index')
-            ->with('success', 'Produk baru berhasil disimpan.');
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        if ($request->filled('stock_status') && $request->stock_status === 'low') {
+            $query->whereColumn('stock', '<=', 'minimum_stock');
+        }
+
+        $products = $query->orderBy('name')->paginate(10)->withQueryString();
+        $categories = Category::orderBy('name')->get();
+
+        return view('products.index', compact('products', 'categories'));
     }
 
-    // GET /products/{product} (show) - Implicit Route Model Binding (Slide 14)
+    public function lowStock()
+    {
+        $products = Product::with('category')
+            ->whereColumn('stock', '<=', 'minimum_stock')
+            ->orderBy('stock', 'asc')
+            ->paginate(10);
+
+        return view('products.low_stock', compact('products'));
+    }
+
+    public function create()
+    {
+        Gate::authorize('admin-only');
+        $categories = Category::orderBy('name')->get();
+        return view('products.create', compact('categories'));
+    }
+
+    public function store(Request $request)
+    {
+        Gate::authorize('admin-only');
+        // Sesuai Slide 15 PPT UTS
+        $validated = $request->validate([
+            'sku' => ['required', 'string', 'max:50', 'unique:products,sku'],
+            'name' => ['required', 'string', 'max:150'],
+            'category_id' => ['required', 'exists:categories,id'],
+            'purchase_price' => ['required', 'numeric', 'min:0'],
+            'selling_price' => ['required', 'numeric', 'min:0'],
+            'stock' => ['required', 'integer', 'min:0'],
+            'minimum_stock' => ['required', 'integer', 'min:0'],
+        ]);
+
+        Product::create($validated);
+        return redirect()->route('products.index')->with('success', 'Produk berhasil ditambahkan.');
+    }
+
     public function show(Product $product)
     {
-        $product->load(['category', 'suppliers', 'stockMovements']);
+        $product->load(['category', 'purchaseItems.purchase.supplier', 'saleItems.sale.user']);
         return view('products.show', compact('product'));
     }
 
-    // GET /products/{product}/edit (edit)
     public function edit(Product $product)
     {
+        Gate::authorize('admin-only');
         $categories = Category::orderBy('name')->get();
-        $suppliers = Supplier::orderBy('name')->get();
-        return view('products.edit', compact('product', 'categories', 'suppliers'));
+        return view('products.edit', compact('product', 'categories'));
     }
 
-    // PUT /products/{product} (update)
     public function update(Request $request, Product $product)
     {
+        Gate::authorize('admin-only');
         $validated = $request->validate([
-            'category_id'   => ['required', 'exists:categories,id'],
-            'sku'           => ['required', 'string', 'min:3', 'max:50', 'unique:products,sku,' . $product->id],
-            'name'          => ['required', 'string', 'min:3', 'max:150'],
-            'price'         => ['required', 'numeric', 'gt:0'],
+            'sku' => ['required', 'string', 'max:50', 'unique:products,sku,' . $product->id],
+            'name' => ['required', 'string', 'max:150'],
+            'category_id' => ['required', 'exists:categories,id'],
+            'purchase_price' => ['required', 'numeric', 'min:0'],
+            'selling_price' => ['required', 'numeric', 'min:0'],
             'minimum_stock' => ['required', 'integer', 'min:0'],
-            'supplier_id'   => ['nullable', 'exists:suppliers,id'],
         ]);
 
-        $validated['sku'] = strtoupper($validated['sku']);
         $product->update($validated);
-
-        if ($request->filled('supplier_id')) {
-            $product->suppliers()->sync([
-                $request->supplier_id => ['supplier_price' => $validated['price'] * 0.8]
-            ]);
-        }
-
-        return redirect()->route('products.index')
-            ->with('success', 'Data produk berhasil diperbarui.');
+        return redirect()->route('products.index')->with('success', 'Produk berhasil diperbarui.');
     }
 
-    // DELETE /products/{product} (destroy) - Menerapkan Business Rule P4 ON DELETE RESTRICT
     public function destroy(Product $product)
     {
-        try {
-            $product->delete();
-            return redirect()->route('products.index')
-                ->with('success', 'Produk berhasil dihapus.');
-        } catch (QueryException $e) {
-            return redirect()->route('products.index')
-                ->with('error', 'DITOLAK (Restrict On Delete): Produk ini sudah memiliki riwayat transaksi stok dan tidak boleh dihapus!');
+        Gate::authorize('admin-only');
+        // Slide 8 PPT: Produk yang sudah dipakai dalam transaksi tidak dihapus secara hard delete
+        if ($product->purchaseItems()->exists() || $product->saleItems()->exists()) {
+            return back()->with('error', 'Pelanggaran Business Rule: Produk sudah digunakan dalam transaksi, dilarang melakukan Hard Delete!');
         }
+
+        $product->delete();
+        return redirect()->route('products.index')->with('success', 'Produk berhasil dihapus.');
     }
 }

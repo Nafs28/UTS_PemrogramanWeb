@@ -4,36 +4,52 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Product;
-use App\Models\StockMovement;
-use Illuminate\Support\Facades\DB;
+use App\Models\Purchase;
+use App\Models\Sale;
+use App\Models\Supplier;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        // 5 Widget Ringkasan Inventory (Kesinambungan P4 Slide 29)
         $totalProducts = Product::count();
-        $inventoryValue = Product::sum(DB::raw('stock * price'));
+        $totalCategories = Category::count();
+        $totalSuppliers = Supplier::count();
+
+        $salesToday = Sale::where('status', 'completed')->whereDate('sold_at', today())->sum('total');
+        $salesThisMonth = Sale::where('status', 'completed')
+            ->whereMonth('sold_at', now()->month)
+            ->whereYear('sold_at', now()->year)
+            ->sum('total');
+
+        $purchasesThisMonth = Purchase::where('status', 'completed')
+            ->whereMonth('purchased_at', now()->month)
+            ->whereYear('purchased_at', now()->year)
+            ->sum('total');
+
+        $totalSalesCount = Sale::where('status', 'completed')->count();
+        $totalPurchasesCount = Purchase::where('status', 'completed')->count();
+
         $lowStockProducts = Product::with('category')
             ->whereColumn('stock', '<=', 'minimum_stock')
-            ->orderBy('stock')
+            ->orderBy('stock', 'asc')
             ->get();
-        $totalIn = StockMovement::where('type', 'IN')->sum('quantity');
-        $totalOut = StockMovement::where('type', 'OUT')->sum('quantity');
 
-        // Laporan Agregat per Kategori menggunakan Eloquent withCount, withSum, withAvg
-        $categoryReport = Category::withCount('products')
-            ->withSum('products', 'stock')
-            ->withAvg('products', 'price')
-            ->get();
+        $recentSales = Sale::with('user')->latest('sold_at')->take(5)->get();
+        $recentPurchases = Purchase::with(['supplier', 'user'])->latest('purchased_at')->take(5)->get();
 
         return view('dashboard', compact(
             'totalProducts',
-            'inventoryValue',
+            'totalCategories',
+            'totalSuppliers',
+            'salesToday',
+            'salesThisMonth',
+            'purchasesThisMonth',
+            'totalSalesCount',
+            'totalPurchasesCount',
             'lowStockProducts',
-            'totalIn',
-            'totalOut',
-            'categoryReport'
+            'recentSales',
+            'recentPurchases'
         ));
     }
 }

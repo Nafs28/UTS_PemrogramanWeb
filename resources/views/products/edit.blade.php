@@ -1,54 +1,37 @@
 @extends('layouts.app')
-@section('title', 'Edit Produk - Laravel')
+@section('title', 'Edit Produk')
 
 @section('content')
-<div class="card" style="max-width: 580px; margin: 0 auto;">
-    <h2 style="margin-top:0;">Edit Produk: {{ $product->sku }}</h2>
-
-    <form method="POST" action="{{ route('products.update', $product) }}">
-        @csrf
-        @method('PUT')
-
-        <div class="form-group">
-            <label>Kode SKU</label>
-            <input name="sku" value="{{ old('sku', $product->sku) }}" required>
-            @error('sku') <small class="error-msg">{{ $message }}</small> @enderror
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-dark text-white">Edit Produk: {{ $product->name }}</div>
+            <div class="card-body p-4">
+                <form action="{{ route('products.update', $product) }}" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <div class="row g-3">
+                        <div class="col-md-4"><label class="form-label">SKU</label><input type="text" name="sku" class="form-control" value="{{ old('sku', $product->sku) }}" required></div>
+                        <div class="col-md-8"><label class="form-label">Nama Produk</label><input type="text" name="name" class="form-control" value="{{ old('name', $product->name) }}" required></div>
+                        <div class="col-md-12">
+                            <label class="form-label">Kategori</label>
+                            <select name="category_id" class="form-select" required>
+                                @foreach($categories as $c)
+                                    <option value="{{ $c->id }}" {{ old('category_id', $product->category_id) == $c->id ? 'selected' : '' }}>{{ $c->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-4"><label class="form-label">Harga Beli (Rp)</label><input type="number" name="purchase_price" class="form-control" value="{{ old('purchase_price', $product->purchase_price) }}" min="0" required></div>
+                        <div class="col-md-4"><label class="form-label">Harga Jual (Rp)</label><input type="number" name="selling_price" class="form-control" value="{{ old('selling_price', $product->selling_price) }}" min="0" required></div>
+                        <div class="col-md-4"><label class="form-label">Minimum Stok</label><input type="number" name="minimum_stock" class="form-control" value="{{ old('minimum_stock', $product->minimum_stock) }}" min="0" required></div>
+                    </div>
+                    <div class="mt-4 d-flex justify-content-end gap-2">
+                        <a href="{{ route('products.index') }}" class="btn btn-secondary">Batal</a>
+                        <button type="submit" class="btn btn-dark">Simpan Perubahan</button>
+                    </div>
+                </form>
+            </div>
         </div>
-
-        <div class="form-group">
-            <label>Nama Produk</label>
-            <input name="name" value="{{ old('name', $product->name) }}" required>
-            @error('name') <small class="error-msg">{{ $message }}</small> @enderror
-        </div>
-
-        <div class="form-group">
-            <label>Kategori</label>
-            <select name="category_id" required>
-                @foreach($categories as $c)
-                    <option value="{{ $c->id }}" {{ (int)old('category_id', $product->category_id) === $c->id ? 'selected' : '' }}>
-                        {{ $c->name }}
-                    </option>
-                @endforeach
-            </select>
-            @error('category_id') <small class="error-msg">{{ $message }}</small> @enderror
-        </div>
-
-        <div class="form-group">
-            <label>Harga Jual (Rp)</label>
-            <input type="number" step="any" name="price" value="{{ old('price', $product->price) }}" required>
-            @error('price') <small class="error-msg">{{ $message }}</small> @enderror
-        </div>
-
-        <div class="form-group">
-            <label>Batas Minimum Stok</label>
-            <input type="number" name="minimum_stock" value="{{ old('minimum_stock', $product->minimum_stock) }}" required>
-            @error('minimum_stock') <small class="error-msg">{{ $message }}</small> @enderror
-        </div>
-
-        <div style="display:flex; gap:8px;">
-            <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
-            <a href="{{ route('products.index') }}" class="btn btn-secondary">Batal</a>
-        </div>
-    </form>
+    </div>
 </div>
 @endsection

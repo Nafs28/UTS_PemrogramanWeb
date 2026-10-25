@@ -1,73 +1,228 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Inventory Laravel - Pertemuan 5')</title>
+    <title>@yield('title', 'Inventory & Sales') — Kopi Nusantara</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        *, *::before, *::after { box-sizing: border-box; }
-        body { margin: 0; padding: 20px 16px; font-family: Arial, sans-serif; background: #f1f5f9; color: #0f172a; line-height: 1.5; }
-        .container { max-width: 1100px; margin: 0 auto; }
-        .card { background: #fff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(15,23,42,0.04); }
-        .navbar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; }
-        .nav-links { display: flex; flex-wrap: wrap; gap: 10px; }
-        .nav-links a { text-decoration: none; padding: 8px 14px; border-radius: 8px; font-weight: 600; font-size: 14px; color: #334155; background: #f8fafc; }
-        .nav-links a:hover, .nav-links a.active { background: #2563eb; color: #fff; }
-        .widgets { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 20px; }
-        .widget { flex: 1 1 190px; background: #fff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 16px; }
-        .widget-title { font-size: 12px; color: #64748b; text-transform: uppercase; font-weight: 700; }
-        .widget-value { font-size: 22px; font-weight: 700; margin-top: 6px; }
-        table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        th, td { padding: 10px 12px; border-bottom: 1px solid #e2e8f0; text-align: left; }
-        th { background: #f8fafc; }
-        .product-name { font-weight: 400; } /* Agar uji Anti-XSS <b>Promo</b> terlihat jelas */
-        .badge { display: inline-block; padding: 3px 9px; font-size: 12px; border-radius: 99px; font-weight: 600; background: #e2e8f0; color: #334155; }
-        .badge-in { background: #dcfce7; color: #166534; }
-        .badge-out { background: #fee2e2; color: #991b1b; }
-        .badge-low { background: #fef3c7; color: #92400e; }
-        .alert { padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-weight: 600; font-size: 14px; }
-        .alert-success { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
-        .alert-error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
-        .form-group { margin-bottom: 14px; }
-        .form-group label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 14px; }
-        input, select { padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; width: 100%; }
-        .error-msg { color: #dc2626; font-size: 12px; margin-top: 4px; display: block; }
-        .btn, button { padding: 9px 14px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; }
-        .btn-primary { background: #2563eb; color: #fff; }
-        .btn-warning { background: #f59e0b; color: #fff; }
-        .btn-danger { background: #dc2626; color: #fff; }
-        .btn-secondary { background: #64748b; color: #fff; }
-        .btn-sm { padding: 5px 10px; font-size: 12px; }
-        nav[role="navigation"] svg { width: 18px; height: 18px; vertical-align: middle; }
+        :root {
+            --bg-main: #0b0f17;
+            --bg-surface: #131a26;
+            --bg-elevated: #1a2333;
+            --border-subtle: #263147;
+            --text-primary: #f1f5f9;
+            --text-muted: #94a3b8;
+            --accent-gold: #c89d66;
+            --accent-gold-hover: #b38852;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-main) !important;
+            color: var(--text-primary) !important;
+            letter-spacing: -0.01em;
+        }
+
+        /* Navbar Minimalist Dark */
+        .navbar {
+            background-color: rgba(19, 26, 38, 0.9) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-subtle);
+            padding-top: 0.85rem;
+            padding-bottom: 0.85rem;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.15rem;
+            color: #ffffff !important;
+            letter-spacing: 0.02em;
+        }
+
+        .nav-link {
+            color: var(--text-muted) !important;
+            font-weight: 500;
+            font-size: 0.9rem;
+            padding: 0.5rem 0.85rem !important;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: #ffffff !important;
+            background-color: var(--bg-elevated);
+        }
+
+        /* Cards & Containers Override */
+        .card {
+            background-color: var(--bg-surface) !important;
+            border: 1px solid var(--border-subtle) !important;
+            border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28) !important;
+        }
+
+        .card-header, .card-footer {
+            background-color: var(--bg-elevated) !important;
+            border-color: var(--border-subtle) !important;
+            color: var(--text-primary) !important;
+        }
+
+        .bg-white, .bg-light {
+            background-color: var(--bg-surface) !important;
+            color: var(--text-primary) !important;
+        }
+
+        .text-dark {
+            color: var(--text-primary) !important;
+        }
+
+        .text-muted, .text-secondary {
+            color: var(--text-muted) !important;
+        }
+
+        /* Tables Minimalist Dark */
+        .table {
+            --bs-table-bg: transparent;
+            --bs-table-color: var(--text-primary);
+            --bs-table-border-color: var(--border-subtle);
+            --bs-table-hover-bg: rgba(255, 255, 255, 0.03);
+            margin-bottom: 0;
+        }
+
+        .table-light, .table-dark {
+            --bs-table-bg: var(--bg-elevated) !important;
+            --bs-table-color: #cbd5e1 !important;
+            --bs-table-border-color: var(--border-subtle) !important;
+        }
+
+        .table thead th {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+            color: var(--text-muted);
+            padding-top: 0.85rem;
+            padding-bottom: 0.85rem;
+        }
+
+        /* Forms & Inputs */
+        .form-control, .form-select {
+            background-color: #0e1420 !important;
+            border: 1px solid var(--border-subtle) !important;
+            color: var(--text-primary) !important;
+            border-radius: 8px;
+            padding: 0.6rem 0.85rem;
+            font-size: 0.92rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: #0e1420 !important;
+            border-color: var(--accent-gold) !important;
+            box-shadow: 0 0 0 3px rgba(200, 157, 102, 0.15) !important;
+            color: #ffffff !important;
+        }
+
+        .form-control::placeholder {
+            color: #475569 !important;
+        }
+
+        /* Buttons */
+        .btn-dark, .btn-primary {
+            background-color: var(--accent-gold) !important;
+            border-color: var(--accent-gold) !important;
+            color: #0b0f17 !important;
+            font-weight: 600;
+            border-radius: 8px;
+        }
+
+        .btn-dark:hover, .btn-primary:hover {
+            background-color: var(--accent-gold-hover) !important;
+            border-color: var(--accent-gold-hover) !important;
+            color: #0b0f17 !important;
+        }
+
+        .btn-outline-secondary, .btn-outline-light {
+            border-color: var(--border-subtle) !important;
+            color: var(--text-primary) !important;
+            border-radius: 8px;
+        }
+
+        .btn-outline-secondary:hover, .btn-outline-light:hover {
+            background-color: var(--bg-elevated) !important;
+            color: #ffffff !important;
+        }
+
+        code {
+            color: #e2b887 !important;
+            background-color: rgba(200, 157, 102, 0.1);
+            padding: 0.2em 0.45em;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
-<div class="container">
-    <header class="card navbar">
-        <div>
-            <strong style="font-size: 18px;">📦 Inventory Laravel (MVC)</strong>
-            <span class="badge" style="background:#dbeafe;color:#1e40af;margin-left:6px;">Pertemuan 5</span>
+<nav class="navbar navbar-expand-lg mb-4">
+    <div class="container">
+        <a class="navbar-brand" href="{{ route('dashboard') }}">Kopi Nusantara</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        @auth
+        <div class="collapse navbar-collapse" id="navMenu">
+            <ul class="navbar-nav me-auto gap-1 ms-lg-3">
+                <li class="nav-item"><a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link {{ request()->routeIs('products.index') ? 'active' : '' }}" href="{{ route('products.index') }}">Produk</a></li>
+                <li class="nav-item"><a class="nav-link {{ request()->routeIs('products.low_stock') ? 'active text-warning' : '' }}" href="{{ route('products.low_stock') }}">Stok Rendah</a></li>
+                @can('admin-only')
+                <li class="nav-item"><a class="nav-link {{ request()->routeIs('categories.*') ? 'active' : '' }}" href="{{ route('categories.index') }}">Kategori</a></li>
+                <li class="nav-item"><a class="nav-link {{ request()->routeIs('suppliers.*') ? 'active' : '' }}" href="{{ route('suppliers.index') }}">Supplier</a></li>
+                <li class="nav-item"><a class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}" href="{{ route('users.index') }}">Users & Role</a></li>
+                @endcan
+                <li class="nav-item"><a class="nav-link {{ request()->routeIs('purchases.*') ? 'active' : '' }}" href="{{ route('purchases.index') }}">Purchases (In)</a></li>
+                <li class="nav-item"><a class="nav-link {{ request()->routeIs('sales.*') ? 'active' : '' }}" href="{{ route('sales.index') }}">Sales (Out)</a></li>
+            </ul>
+            <div class="d-flex align-items-center gap-3">
+                <div class="text-end">
+                    <div class="small fw-semibold text-white">{{ auth()->user()->name }}</div>
+                    <span class="badge {{ auth()->user()->isAdmin() ? 'bg-warning text-dark' : 'bg-secondary' }}" style="font-size: 0.7rem;">
+                        {{ strtoupper(auth()->user()->role) }}
+                    </span>
+                </div>
+                <form action="{{ route('logout') }}" method="POST" class="m-0">
+                    @csrf
+                    <button type="submit" class="btn btn-outline-light btn-sm px-3">Logout</button>
+                </form>
+            </div>
         </div>
-        <nav class="nav-links">
-            <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">📊 Dashboard</a>
-            <a href="{{ route('products.index') }}" class="{{ request()->routeIs('products.*') ? 'active' : '' }}">📋 Produk (CRUD)</a>
-            <a href="{{ route('categories.index') }}" class="{{ request()->routeIs('categories.*') ? 'active' : '' }}">🏷️ Kategori</a>
-            <a href="{{ route('stock.index') }}" class="{{ request()->routeIs('stock.*') ? 'active' : '' }}">🔄 Transaksi Stok (IN/OUT)</a>
-            <a href="{{ route('test.runner') }}" class="{{ request()->routeIs('test.runner') ? 'active' : '' }}">✅ Test Runner</a>
-        </nav>
-    </header>
+        @endauth
+    </div>
+</nav>
 
+<div class="container pb-5">
     @if(session('success'))
-        <x-alert type="success">{{ session('success') }}</x-alert>
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm">{{ session('success') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
     @endif
-
     @if(session('error'))
-        <x-alert type="error">{{ session('error') }}</x-alert>
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm">{{ session('error') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    @endif
+    @if($errors->any())
+        <div class="alert alert-danger border-0 shadow-sm">
+            <strong>Validasi Gagal:</strong>
+            <ul class="mb-0 mt-1">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
     @endif
 
-    <main>
-        @yield('content')
-    </main>
+    @yield('content')
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+@stack('scripts')
 </body>
 </html>
