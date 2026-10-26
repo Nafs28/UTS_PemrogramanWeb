@@ -212,3 +212,66 @@ Sesuai dengan batasan ruang lingkup pada *Project Brief* UTS, sistem ini berfoku
 - Mengelola stok pada satu lokasi gudang utama (belum mencakup *multi-warehouse* kompleks).
 - Tidak mencakup pembukuan akuntansi penuh (buku besar/neraca), *multi-currency*, atau peramalan berbasis AI.
 - Perubahan angka stok secara langsung pada form Edit Produk sengaja dinonaktifkan agar setiap perubahan stok wajib tercatat melalui transaksi *Purchase (Stock-In)* atau *Sales (Stock-Out)*.
+
+
+# PANDUAN MENJALANKAN DAN LOGIN APLIKASI
+## Kopi Nusantara — Inventory & Sales Management System
+
+Berikut adalah panduan lengkap langkah demi langkah untuk menjalankan aplikasi dan melakukan pengujian login ke dalam sistem:
+
+---
+
+### Langkah 1: Aktifkan Layanan di Laragon
+1. Buka aplikasi **Laragon** di komputer Anda.
+2. Klik tombol **Start All** untuk memastikan server web (**Apache/Nginx**) dan database server (**MySQL**) aktif berjalan.
+
+---
+
+### Langkah 2: Buka Folder Proyek di Terminal VS Code
+1. Buka aplikasi **VS Code**.
+2. Pastikan Anda telah membuka folder proyek:
+   D:\Program\Laragon\www\inventory-sales
+3. Buka terminal terintegrasi di VS Code dengan menekan tombol kombinasi **Ctrl + ~** (atau melalui menu atas: **Terminal -> New Terminal**).
+4. Pastikan direktori terminal berada pada path:
+   PS D:\Program\Laragon\www\inventory-sales>
+
+---
+
+### Langkah 3: Menjalankan Server Lokal Laravel
+Ketik dan jalankan perintah berikut pada terminal:
+
+    php artisan serve
+
+Setelah dijalankan, terminal akan menampilkan pesan:
+INFO  Server running on [http://127.0.0.1:8000].
+
+*(Catatan: Jangan menutup jendela terminal ini selama Anda menguji atau menggunakan website).*
+
+---
+
+### Langkah 4: Membuka Aplikasi di Web Browser
+1. Buka browser (Google Chrome, Microsoft Edge, Brave, dll.).
+2. Masukkan alamat URL berikut pada bilah alamat (address bar), lalu tekan **Enter**:
+   http://127.0.0.1:8000
+3. Sistem secara otomatis akan menampilkan halaman **Login** dengan tema gelap minimalis.
+
+---
+
+### Langkah 5: Kredensial Login Sistem
+
+Silakan gunakan akun demo sesuai peran yang ingin diuji:
+
+#### 1. Login sebagai Admin / Owner (Akses Penuh)
+- **Email:** admin@kopinusantara.test
+- **Password:** password
+- **Hak Akses:** Mengelola seluruh data master (Produk, Kategori, Supplier), mengelola Users & Role, memproses transaksi Purchase & Sales, membatalkan transaksi (Cancel & Restore Stock), serta memantau Dashboard ringkasan.
+
+#### 2. Login sebagai Staff (Akses Terbatas Kasir & Gudang)
+- **Email:** staff@kopinusantara.test
+- **Password:** password
+- **Hak Akses:** Melihat katalog produk dan daftar stok rendah, membuat transaksi pembelian (Stock-In) dan penjualan (Stock-Out). Menu data master dan pembatalan transaksi otomatis dibatasi oleh sistem.
+
+---
+
+### Langkah 6: Selesai
+Setelah tombol **Login** ditekan, Anda akan diarahkan langsung ke halaman **Dashboard** Toko Kopi Nusantara dan dapat mulai menguji seluruh alur transaksi.
